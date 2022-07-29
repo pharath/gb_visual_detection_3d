@@ -93,17 +93,27 @@ Darknet3D::calculate_boxes(
   boxes->header.frame_id = cloud_pc2.header.frame_id;
 
   for (auto bbx : original_bboxes_) {
-    if ((bbx.results.score < minimum_probability_) ||
+
+    // get the name and probability of the most likely class in bbx
+    bbx_max_probability_ = 0;
+    for (auto result : bbx.results) {
+        if (result.score > bbx_max_probability_) {
+            bbx_max_probability_ = result.score;
+            bbx_max_probability_object_name = result.id;
+        }
+    }
+
+    if ((bbx_max_probability_ < minimum_probability_) ||
       (std::find(interested_classes_.begin(), interested_classes_.end(),
-      bbx.results.id) == interested_classes_.end()))
+      bbx_max_probability_object_name) == interested_classes_.end()))
     {
       continue;
     }
 
     int center_x, center_y;
 
-    center_x = bbx.bbx.center.x;
-    center_y = bbx.bbx.center.y;
+    center_x = bbx.bbox.center.x;
+    center_y = bbx.bbox.center.y;
 
     int pc_index = (center_y * cloud_pc2.width) + center_x;
     geometry_msgs::msg::Point32 center_point = cloud_pc.points[pc_index];
@@ -117,8 +127,8 @@ Darknet3D::calculate_boxes(
     maxx = maxy = maxz = -std::numeric_limits<float>::max();
     minx = miny = minz = std::numeric_limits<float>::max();
 
-    for (int i = center_x - (bbx.bbx.size_x / 2); i < center_x + (bbx.bbx.size_x / 2); i++) {
-      for (int j = center_y - (bbx.bbx.size_y / 2); j < center_y + (bbx.bbx.size_y / 2); j++) {
+    for (int i = center_x - (bbx.bbox.size_x / 2); i < center_x + (bbx.bbox.size_x / 2); i++) {
+      for (int j = center_y - (bbx.bbox.size_y / 2); j < center_y + (bbx.bbox.size_y / 2); j++) {
         pc_index = (j * cloud_pc2.width) + i;
         geometry_msgs::msg::Point32 point = cloud_pc.points[pc_index];
 
@@ -140,8 +150,8 @@ Darknet3D::calculate_boxes(
     }
 
     gb_visual_detection_3d_msgs::msg::BoundingBox3d bbx_msg;
-    bbx_msg.object_name = bbx.results.id;
-    bbx_msg.probability = bbx.results.score;
+    bbx_msg.object_name = bbx_max_probability_object_name;
+    bbx_msg.probability = bbx_max_probability_;
 
     bbx_msg.xmin = minx;
     bbx_msg.xmax = maxx;

@@ -85,9 +85,11 @@ private:
   std::string pointcloud_topic_;
   std::string working_frame_;
   std::vector<std::string> interested_classes_ = {};
-  std::vector<vision_msgs::msg::Detection2DArray> original_bboxes_;
+  std::vector<vision_msgs::msg::Detection2D> original_bboxes_;
   float maximum_detection_threshold_, minimum_probability_;
   bool pc_received_;
+  double bbx_max_probability_;
+  std::string bbx_max_probability_object_name;
 };
 
 }  // namespace darknet_ros_3d
