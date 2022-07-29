@@ -24,7 +24,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(darknet_ros_msgs REQUIRED)
+find_package(vision_msgs REQUIRED)
 find_package(gb_visual_detection_3d_msgs)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
@@ -38,7 +38,7 @@ set(dependencies
   rclcpp_lifecycle
   lifecycle_msgs
   sensor_msgs
-  darknet_ros_msgs
+  vision_msgs
   gb_visual_detection_3d_msgs
   tf2
   tf2_ros

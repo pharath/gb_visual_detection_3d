@@ -42,7 +42,7 @@ Darknet3D::Darknet3D()
 {
   // Init Params
 
-  this->declare_parameter("darknet_ros_topic", "/darknet_ros/bounding_boxes");
+  this->declare_parameter("ros2_deepstream_topic", "/infer_detection");
   this->declare_parameter("output_bbx3d_topic", "/darknet_ros_3d/bounding_boxes");
   this->declare_parameter("point_cloud_topic", "/camera/depth_registered/points");
   this->declare_parameter("working_frame", "camera_link");
@@ -55,8 +55,8 @@ Darknet3D::Darknet3D()
   pointCloud_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
     pointcloud_topic_, 1, std::bind(&Darknet3D::pointCloudCb, this, std::placeholders::_1));
 
-  darknet_ros_sub_ = this->create_subscription<darknet_ros_msgs::msg::BoundingBoxes>(
-    input_bbx_topic_, 1, std::bind(&Darknet3D::darknetCb, this, std::placeholders::_1));
+  ros2_deepstream_sub_ = this->create_subscription<vision_msgs::msg::Detection2DArray>(
+    input_bbx_topic_, 1, std::bind(&Darknet3D::ros2DeepstreamCb, this, std::placeholders::_1));
 
   darknet3d_pub_ = this->create_publisher<gb_visual_detection_3d_msgs::msg::BoundingBoxes3d>(
     output_bbx3d_topic_, 100);
@@ -77,9 +77,9 @@ Darknet3D::pointCloudCb(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
 }
 
 void
-Darknet3D::darknetCb(const darknet_ros_msgs::msg::BoundingBoxes::SharedPtr msg)
+Darknet3D::ros2DeepstreamCb(const vision_msgs::msg::Detection2DArray::SharedPtr msg)
 {
-  original_bboxes_ = msg->bounding_boxes;
+  original_bboxes_ = msg->detections;
   last_detection_ts_ = clock_.now();
 }
 
@@ -93,17 +93,17 @@ Darknet3D::calculate_boxes(
   boxes->header.frame_id = cloud_pc2.header.frame_id;
 
   for (auto bbx : original_bboxes_) {
-    if ((bbx.probability < minimum_probability_) ||
+    if ((bbx.results.score < minimum_probability_) ||
       (std::find(interested_classes_.begin(), interested_classes_.end(),
-      bbx.class_id) == interested_classes_.end()))
+      bbx.results.id) == interested_classes_.end()))
     {
       continue;
     }
 
     int center_x, center_y;
 
-    center_x = (bbx.xmax + bbx.xmin) / 2;
-    center_y = (bbx.ymax + bbx.ymin) / 2;
+    center_x = bbx.bbx.center.x;
+    center_y = bbx.bbx.center.y;
 
     int pc_index = (center_y * cloud_pc2.width) + center_x;
     geometry_msgs::msg::Point32 center_point = cloud_pc.points[pc_index];
@@ -117,8 +117,8 @@ Darknet3D::calculate_boxes(
     maxx = maxy = maxz = -std::numeric_limits<float>::max();
     minx = miny = minz = std::numeric_limits<float>::max();
 
-    for (int i = bbx.xmin; i < bbx.xmax; i++) {
-      for (int j = bbx.ymin; j < bbx.ymax; j++) {
+    for (int i = center_x - (bbx.bbx.size_x / 2); i < center_x + (bbx.bbx.size_x / 2); i++) {
+      for (int j = center_y - (bbx.bbx.size_y / 2); j < center_y + (bbx.bbx.size_y / 2); j++) {
         pc_index = (j * cloud_pc2.width) + i;
         geometry_msgs::msg::Point32 point = cloud_pc.points[pc_index];
 
@@ -140,8 +140,8 @@ Darknet3D::calculate_boxes(
     }
 
     gb_visual_detection_3d_msgs::msg::BoundingBox3d bbx_msg;
-    bbx_msg.object_name = bbx.class_id;
-    bbx_msg.probability = bbx.probability;
+    bbx_msg.object_name = bbx.results.id;
+    bbx_msg.probability = bbx.results.score;
 
     bbx_msg.xmin = minx;
     bbx_msg.xmax = maxx;
@@ -236,7 +236,7 @@ Darknet3D::on_configure(const rclcpp_lifecycle::State & state)
   RCLCPP_INFO(this->get_logger(), "[%s] Configuring from [%s] state...",
     this->get_name(), state.label().c_str());
 
-  this->get_parameter("darknet_ros_topic", input_bbx_topic_);
+  this->get_parameter("ros2_deepstream_topic", input_bbx_topic_);
   this->get_parameter("output_bbx3d_topic", output_bbx3d_topic_);
   this->get_parameter("point_cloud_topic", pointcloud_topic_);
   this->get_parameter("working_frame", working_frame_);

@@ -29,8 +29,11 @@
 #include <visualization_msgs/msg/marker_array.hpp>
 #include <string>
 #include <vector>
-#include "darknet_ros_msgs/msg/bounding_boxes.hpp"
-#include "darknet_ros_msgs/msg/bounding_box.hpp"
+#include "vision_msgs/msg/Detection2DArray.hpp"
+#include "vision_msgs/msg/Detection2D.hpp"
+#include "vision_msgs/msg/ObjectHypothesisWithPose.hpp"
+#include "vision_msgs/msg/BoundingBox2D.hpp"
+#include "geometry_msgs/msg/Pose2D.hpp"
 #include "gb_visual_detection_3d_msgs/msg/bounding_boxes3d.hpp"
 
 namespace darknet_ros_3d
@@ -55,7 +58,7 @@ private:
 
   void init_params();
   void pointCloudCb(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
-  void darknetCb(const darknet_ros_msgs::msg::BoundingBoxes::SharedPtr msg);
+  void ros2DeepstreamCb(const vision_msgs::msg::Detection2DArray::SharedPtr msg);
   void calculate_boxes(
     sensor_msgs::msg::PointCloud2 cloud_pc2, sensor_msgs::msg::PointCloud cloud_pc,
     gb_visual_detection_3d_msgs::msg::BoundingBoxes3d * boxes);
@@ -63,7 +66,7 @@ private:
   void publish_markers(gb_visual_detection_3d_msgs::msg::BoundingBoxes3d boxes);
 
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pointCloud_sub_;
-  rclcpp::Subscription<darknet_ros_msgs::msg::BoundingBoxes>::SharedPtr darknet_ros_sub_;
+  rclcpp::Subscription<vision_msgs::msg::Detection2DArray>::SharedPtr ros2_deepstream_sub_;
 
   rclcpp_lifecycle::LifecyclePublisher
   <gb_visual_detection_3d_msgs::msg::BoundingBoxes3d>::SharedPtr darknet3d_pub_;
@@ -82,7 +85,7 @@ private:
   std::string pointcloud_topic_;
   std::string working_frame_;
   std::vector<std::string> interested_classes_ = {};
-  std::vector<darknet_ros_msgs::msg::BoundingBox> original_bboxes_;
+  std::vector<vision_msgs::msg::Detection2DArray> original_bboxes_;
   float maximum_detection_threshold_, minimum_probability_;
   bool pc_received_;
 };
