@@ -4,7 +4,7 @@
   <name>darknet_ros_3d</name>
   <version>1.0.0</version>
   <description>darknet_ros_3d package: Package for 3D objects detection using rgbd camera</description>
-  <maintainer email="noemail">Fernando Gonzalez (modified by Pharath)</maintainer>
+  <maintainer email="fergonzaramos@yahoo.es">Fernando Gonzalez (modified by Pharath)</maintainer>
   <license>BSD</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

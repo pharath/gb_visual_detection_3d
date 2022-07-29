@@ -29,11 +29,11 @@
 #include <visualization_msgs/msg/marker_array.hpp>
 #include <string>
 #include <vector>
-#include "vision_msgs/msg/Detection2DArray.hpp"
-#include "vision_msgs/msg/Detection2D.hpp"
-#include "vision_msgs/msg/ObjectHypothesisWithPose.hpp"
-#include "vision_msgs/msg/BoundingBox2D.hpp"
-#include "geometry_msgs/msg/Pose2D.hpp"
+#include "vision_msgs/msg/detection2_d_array.hpp"
+#include "vision_msgs/msg/detection2_d.hpp"
+#include "vision_msgs/msg/object_hypothesis_with_pose.hpp"
+#include "vision_msgs/msg/bounding_box2_d.hpp"
+#include "geometry_msgs/msg/pose2_d.hpp"
 #include "gb_visual_detection_3d_msgs/msg/bounding_boxes3d.hpp"
 
 namespace darknet_ros_3d
