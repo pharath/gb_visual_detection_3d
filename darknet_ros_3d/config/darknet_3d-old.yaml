@@ -1,9 +1,9 @@
 darknet3d_node:
   ros__parameters:
-    ros2_deepstream_topic: /infer_detection
+    darknet_ros_topic: /darknet_ros/bounding_boxes
     output_bbx3d_topic: /darknet_ros_3d/bounding_boxes
     point_cloud_topic: /camera/pointcloud
     working_frame: camera_link
     maximum_detection_threshold: 0.2
     minimum_probability: 0.4
-    interested_classes: ["prohibitory", "mandatory", "other", "danger"]
+    interested_classes: ["person", "book", "bottle"]
